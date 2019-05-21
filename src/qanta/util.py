@@ -63,12 +63,18 @@ def download(local_qanta_prefix, retrieve_paragraphs=False):
     """
     Download the qanta dataset
     """
+    #print("\n\n\n\t\t%s\n\n\n" %retrieve_paragraphs)
+    
     for s3_file, local_file in make_file_pairs(FILES, S3_HTTP_PREFIX, local_qanta_prefix):
+        print("\n\n\t\tLocal File: %s\n\n" %local_file)
         download_file(s3_file, local_file)
-
+    
     if retrieve_paragraphs:
+        print("\n\nRetreiving paragraphs\n\n")
         for objstore_file, local_file in make_file_pairs(PARAGRAPH_FILES, OBJSTORE_PREFIX, local_qanta_prefix):
+            print("\n\n\t\tLocal File: %s\n\n" %local_file)
             download_file(objstore_file, local_file)
+            print("step")
             with zipfile.ZipFile(local_file, 'r') as zip_file:    
                 zip_file.extractall(local_qanta_prefix)
                 remove(local_file)

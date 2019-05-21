@@ -4,6 +4,9 @@ import json
 
 from qanta.util import QANTA_MAPPED_DATASET_PATH
 
+#For POS_char
+from qanta.POS_char import POS_char
+
 GUESSER_TRAIN_FOLD = 'guesstrain'
 BUZZER_TRAIN_FOLD = 'buzztrain'
 TRAIN_FOLDS = {GUESSER_TRAIN_FOLD, BUZZER_TRAIN_FOLD}
@@ -70,8 +73,12 @@ class Question(NamedTuple):
 
         :param char_skip: Number of characters to skip each time
         """
+        '''
         char_indices = list(range(char_skip, len(self.text) + char_skip, char_skip))
+        print(char_indices)
         return [self.text[:i] for i in char_indices], char_indices
+        '''
+        return POS_char(self.text)
 
 
 class QantaDatabase:
@@ -107,12 +114,12 @@ class QantaDatabase:
 
 
 class QuizBowlDataset:
-    def __init__(self, *, guesser_train=False, buzzer_train=False):
+    def __init__(self, *, guesser_train=False, buzzer_train=False, buzzer_dev=False):
         """
         Initialize a new quiz bowl data set
         """
         super().__init__()
-        if not guesser_train and not buzzer_train:
+        if not guesser_train and not buzzer_train and not buzzer_dev:
             raise ValueError('Requesting a dataset which produces neither guesser or buzzer training data is invalid')
 
         if guesser_train and buzzer_train:
@@ -121,21 +128,25 @@ class QuizBowlDataset:
         self.db = QantaDatabase()
         self.guesser_train = guesser_train
         self.buzzer_train = buzzer_train
+        self.buzzer_dev = buzzer_dev
 
     def training_data(self):
-        training_examples = []
-        training_pages = []
+        #training_examples = []
+        #training_pages = []
         questions = []
         if self.guesser_train:
             questions.extend(self.db.guess_train_questions)
         if self.buzzer_train:
             questions.extend(self.db.buzz_train_questions)
+        if self.buzzer_dev:
+            questions.extend(self.db.buzz_dev_questions)
 
+        '''
         for q in questions:
             training_examples.append(q.sentences)
             training_pages.append(q.page)
-
-        return training_examples, training_pages, None
+        '''
+        return questions#training_examples, training_pages, None
 
     def questions_by_fold(self):
         return {
